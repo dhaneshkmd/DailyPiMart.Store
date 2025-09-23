@@ -22,10 +22,14 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover))",
+          glow: "hsl(var(--primary-glow))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+          hover: "hsl(var(--secondary-hover))",
+          glow: "hsl(var(--secondary-glow))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -47,16 +51,45 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        // Pi Network brand colors
+        pi: {
+          purple: "hsl(var(--pi-purple))",
+          gold: "hsl(var(--pi-gold))",
+          light: "hsl(var(--pi-light))",
+          dark: "hsl(var(--pi-dark))",
         },
+        // Marketplace status colors
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+      },
+      backgroundImage: {
+        'gradient-pi': 'var(--gradient-pi)',
+        'gradient-hero': 'var(--gradient-hero)',
+        'gradient-card': 'var(--gradient-card)',
+        'gradient-subtle': 'var(--gradient-subtle)',
+      },
+      boxShadow: {
+        'pi': 'var(--shadow-pi)',
+        'gold': 'var(--shadow-gold)',
+        'elegant': 'var(--shadow-elegant)',
+      },
+      fontFamily: {
+        'heading': 'var(--font-heading)',
+        'body': 'var(--font-body)',
+      },
+      transitionTimingFunction: {
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
       },
       borderRadius: {
         lg: "var(--radius)",
