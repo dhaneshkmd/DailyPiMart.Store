@@ -44,15 +44,24 @@ export function usePiSDK() {
     
     const checkPiSDK = () => {
       attempts++;
+      console.log(`Pi SDK check attempt ${attempts}:`, {
+        window_Pi: !!window?.Pi,
+        authenticate: !!window?.Pi?.authenticate,
+        createPayment: !!window?.Pi?.createPayment,
+        userAgent: navigator.userAgent
+      });
+      
       const piAvailable = !!(window?.Pi?.authenticate && window?.Pi?.createPayment);
       
       if (piAvailable) {
+        console.log('Pi SDK is ready!');
         setIsReady(true);
         setIsChecking(false);
         return;
       }
       
       if (attempts >= maxAttempts) {
+        console.log('Pi SDK check timeout - Pi SDK not available');
         setIsChecking(false);
         return;
       }
