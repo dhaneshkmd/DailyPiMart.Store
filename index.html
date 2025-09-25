@@ -20,6 +20,20 @@
   <body>
     <div id="root"></div>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+      // Initialize Pi SDK as required by Pi Network documentation
+      // Using sandbox mode for testing phase as mentioned by user
+      if (window.Pi) {
+        Pi.init({ version: "2.0", sandbox: true });
+      } else {
+        // Retry initialization after SDK loads
+        window.addEventListener('load', function() {
+          if (window.Pi) {
+            Pi.init({ version: "2.0", sandbox: true });
+          }
+        });
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

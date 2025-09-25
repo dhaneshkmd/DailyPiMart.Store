@@ -37,10 +37,10 @@ export function usePiSDK() {
   const [user, setUser] = useState<PiUser | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  // Check if Pi SDK is available
+  // Check if Pi SDK is available and initialized
   useEffect(() => {
     let attempts = 0;
-    const maxAttempts = 20; // 10 seconds max
+    const maxAttempts = 30; // 15 seconds max to account for initialization
     
     const checkPiSDK = () => {
       attempts++;
@@ -54,14 +54,15 @@ export function usePiSDK() {
       const piAvailable = !!(window?.Pi?.authenticate && window?.Pi?.createPayment);
       
       if (piAvailable) {
-        console.log('Pi SDK is ready!');
+        console.log('Pi SDK is ready and initialized!');
         setIsReady(true);
         setIsChecking(false);
         return;
       }
       
       if (attempts >= maxAttempts) {
-        console.log('Pi SDK check timeout - Pi SDK not available');
+        console.log('Pi SDK check timeout - Pi SDK not available or not initialized');
+        console.log('Make sure you are running in Pi Browser or have configured sandbox mode properly');
         setIsChecking(false);
         return;
       }
@@ -69,18 +70,31 @@ export function usePiSDK() {
       setTimeout(checkPiSDK, 500);
     };
     
-    checkPiSDK();
+    // Wait a bit for SDK initialization before checking
+    setTimeout(checkPiSDK, 1000);
   }, []);
 
   const authenticate = useCallback(async () => {
     if (!isReady || !window.Pi) {
-      throw new Error('Pi SDK not available');
+      throw new Error('Pi SDK not available or not initialized');
     }
 
     setIsAuthenticating(true);
     
     try {
-      const authResult = await window.Pi.authenticate(['username', 'payments']);
+      console.log('Attempting Pi authentication with scopes: [username, payments]');
+      
+      // Handle incomplete payments as per Pi Network documentation
+      const authResult = await window.Pi.authenticate(
+        ['username', 'payments'], 
+        (payment: any) => {
+          console.log('Incomplete payment found:', payment);
+          // Handle incomplete payment if needed
+        }
+      );
+      
+      console.log('Pi authentication successful:', authResult);
+      
       const piUser: PiUser = {
         uid: authResult.user.uid,
         username: authResult.user.username,
@@ -120,14 +134,28 @@ export function usePiSDK() {
     }
   ) => {
     if (!isReady || !window.Pi) {
-      throw new Error('Pi SDK not available');
+      throw new Error('Pi SDK not available or not initialized');
     }
 
+    console.log('Creating Pi payment:', paymentData);
+
     return window.Pi.createPayment(paymentData, {
-      onReadyForServerApproval: callbacks.onReadyForServerApproval,
-      onReadyForServerCompletion: callbacks.onReadyForServerCompletion,
-      onCancelled: callbacks.onCancelled || (() => {}),
-      onError: callbacks.onError || (() => {}),
+      onReadyForServerApproval: async (paymentId: string) => {
+        console.log('Payment ready for server approval:', paymentId);
+        await callbacks.onReadyForServerApproval(paymentId);
+      },
+      onReadyForServerCompletion: async (paymentId: string, txid: string) => {
+        console.log('Payment ready for server completion:', { paymentId, txid });
+        await callbacks.onReadyForServerCompletion(paymentId, txid);
+      },
+      onCancelled: (paymentId: string) => {
+        console.log('Payment cancelled:', paymentId);
+        callbacks.onCancelled?.(paymentId);
+      },
+      onError: (error: any, payment: any) => {
+        console.error('Payment error:', error, payment);
+        callbacks.onError?.(error, payment);
+      },
     });
   }, [isReady]);
 
