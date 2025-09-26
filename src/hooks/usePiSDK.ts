@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import { piAPI } from '@/lib/pi-api';
 
 declare global {
   interface Window {
@@ -94,6 +95,16 @@ export function usePiSDK() {
       );
       
       console.log('Pi authentication successful:', authResult);
+      
+      // Verify the user with our backend (calls Pi Network's /me endpoint)
+      try {
+        const verifiedUser = await piAPI.verifyUser(authResult.accessToken);
+        console.log('User verified with Pi Network:', verifiedUser);
+      } catch (error) {
+        console.error('Failed to verify user with Pi Network:', error);
+        // Continue with authentication even if verification fails for now
+        // In production, you might want to handle this differently
+      }
       
       const piUser: PiUser = {
         uid: authResult.user.uid,

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { usePiSDK } from '@/hooks/usePiSDK';
 import { useToast } from '@/hooks/use-toast';
+import { piAPI } from '@/lib/pi-api';
 import { Loader2, Zap } from 'lucide-react';
 
 interface PiPayButtonProps {
@@ -64,20 +65,43 @@ export function PiPayButton({
               description: "Your payment is being processed...",
             });
             
-            // In a real app, this would call your API
-            console.log('Payment approved:', paymentId);
+            try {
+              // Approve payment with Pi Network via our backend
+              await piAPI.approvePayment(paymentId);
+              console.log('Payment approved:', paymentId);
+            } catch (error) {
+              console.error('Failed to approve payment:', error);
+              toast({
+                title: "Approval Failed",
+                description: "Failed to approve payment. Please try again.",
+                variant: "destructive",
+              });
+              setIsProcessing(false);
+            }
           },
           
           onReadyForServerCompletion: async (paymentId: string, txid: string) => {
-            toast({
-              title: "Payment Successful!",
-              description: `Your order has been completed. Transaction: ${txid.substring(0, 8)}...`,
-            });
-            
-            // In a real app, this would call your API
-            console.log('Payment completed:', { paymentId, txid });
-            onSuccess?.(paymentId, txid);
-            setIsProcessing(false);
+            try {
+              // Complete payment with Pi Network via our backend
+              await piAPI.completePayment(paymentId, txid);
+              
+              toast({
+                title: "Payment Successful!",
+                description: `Your order has been completed. Transaction: ${txid.substring(0, 8)}...`,
+              });
+              
+              console.log('Payment completed:', { paymentId, txid });
+              onSuccess?.(paymentId, txid);
+              setIsProcessing(false);
+            } catch (error) {
+              console.error('Failed to complete payment:', error);
+              toast({
+                title: "Completion Failed",
+                description: "Failed to complete payment verification. Please contact support.",
+                variant: "destructive",
+              });
+              setIsProcessing(false);
+            }
           },
           
           onCancelled: (paymentId: string) => {
