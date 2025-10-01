@@ -104,12 +104,14 @@ export function PiPayButton({
             }
           },
           
-          onCancelled: (paymentId: string) => {
+          onCancel: (paymentId: string) => {
+            console.log('Payment cancelled by user:', paymentId);
             toast({
               title: "Payment Cancelled",
               description: "Your payment was cancelled.",
               variant: "destructive",
             });
+            onError?.({ message: 'Payment cancelled by user' });
             setIsProcessing(false);
           },
           

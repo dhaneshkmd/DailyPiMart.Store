@@ -38,11 +38,19 @@ export interface PiPayment {
   } | null;
 }
 
+// Get the Supabase URL from the current location or environment
+const getSupabaseUrl = () => {
+  // In production, this will be the actual Supabase project URL
+  // During development, it might be localhost
+  return import.meta.env.VITE_SUPABASE_URL || window.location.origin;
+};
+
 // Frontend API calls to our backend
 export const piAPI = {
   // Verify user authentication with Pi Network
   async verifyUser(accessToken: string): Promise<PiUser> {
-    const response = await fetch('/api/pi/verify-user', {
+    const supabaseUrl = getSupabaseUrl();
+    const response = await fetch(`${supabaseUrl}/functions/v1/pi-verify-user`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -51,6 +59,8 @@ export const piAPI = {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to verify user:', errorText);
       throw new Error('Failed to verify user with Pi Network');
     }
 
@@ -59,7 +69,8 @@ export const piAPI = {
 
   // Approve payment on Pi Network
   async approvePayment(paymentId: string): Promise<PiPayment> {
-    const response = await fetch('/api/pi/approve-payment', {
+    const supabaseUrl = getSupabaseUrl();
+    const response = await fetch(`${supabaseUrl}/functions/v1/pi-approve-payment`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,6 +79,8 @@ export const piAPI = {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to approve payment:', errorText);
       throw new Error('Failed to approve payment');
     }
 
@@ -76,7 +89,8 @@ export const piAPI = {
 
   // Complete payment on Pi Network
   async completePayment(paymentId: string, txid: string): Promise<PiPayment> {
-    const response = await fetch('/api/pi/complete-payment', {
+    const supabaseUrl = getSupabaseUrl();
+    const response = await fetch(`${supabaseUrl}/functions/v1/pi-complete-payment`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -85,6 +99,8 @@ export const piAPI = {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to complete payment:', errorText);
       throw new Error('Failed to complete payment');
     }
 
@@ -93,12 +109,38 @@ export const piAPI = {
 
   // Get payment details
   async getPayment(paymentId: string): Promise<PiPayment> {
-    const response = await fetch(`/api/pi/payments/${paymentId}`, {
+    const supabaseUrl = getSupabaseUrl();
+    const response = await fetch(`${supabaseUrl}/functions/v1/pi-get-payment/${paymentId}`, {
       method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to get payment details:', errorText);
       throw new Error('Failed to get payment details');
+    }
+
+    return response.json();
+  },
+
+  // Cancel an incomplete payment (if needed)
+  async cancelPayment(paymentId: string): Promise<PiPayment> {
+    const supabaseUrl = getSupabaseUrl();
+    const response = await fetch(`${supabaseUrl}/functions/v1/pi-cancel-payment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ paymentId }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to cancel payment:', errorText);
+      throw new Error('Failed to cancel payment');
     }
 
     return response.json();

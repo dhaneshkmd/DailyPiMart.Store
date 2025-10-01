@@ -19,7 +19,7 @@ declare global {
       }, callbacks: {
         onReadyForServerApproval: (paymentId: string) => void;
         onReadyForServerCompletion: (paymentId: string, txid: string) => void;
-        onCancelled: (paymentId: string) => void;
+        onCancel: (paymentId: string) => void;
         onError: (error: any, payment: any) => void;
       }) => Promise<void>;
     };
@@ -88,9 +88,27 @@ export function usePiSDK() {
       // Handle incomplete payments as per Pi Network documentation
       const authResult = await window.Pi.authenticate(
         ['username', 'payments'], 
-        (payment: any) => {
-          console.log('Incomplete payment found:', payment);
-          // Handle incomplete payment if needed
+        async (payment: any) => {
+          console.log('Incomplete payment found during authentication:', payment);
+          
+          // According to Pi Network docs, we should handle incomplete payments
+          // by checking their status and completing them if possible
+          if (payment && payment.identifier) {
+            try {
+              const paymentStatus = await piAPI.getPayment(payment.identifier);
+              console.log('Incomplete payment status:', paymentStatus);
+              
+              // If payment is ready for completion, complete it
+              if (paymentStatus.status.transaction_verified && 
+                  !paymentStatus.status.developer_completed &&
+                  paymentStatus.transaction?.txid) {
+                await piAPI.completePayment(payment.identifier, paymentStatus.transaction.txid);
+                console.log('Incomplete payment completed:', payment.identifier);
+              }
+            } catch (error) {
+              console.error('Failed to handle incomplete payment:', error);
+            }
+          }
         }
       );
       
@@ -140,7 +158,7 @@ export function usePiSDK() {
     callbacks: {
       onReadyForServerApproval: (paymentId: string) => Promise<void>;
       onReadyForServerCompletion: (paymentId: string, txid: string) => Promise<void>;
-      onCancelled?: (paymentId: string) => void;
+      onCancel?: (paymentId: string) => void;
       onError?: (error: any, payment: any) => void;
     }
   ) => {
@@ -159,9 +177,9 @@ export function usePiSDK() {
         console.log('Payment ready for server completion:', { paymentId, txid });
         await callbacks.onReadyForServerCompletion(paymentId, txid);
       },
-      onCancelled: (paymentId: string) => {
+      onCancel: (paymentId: string) => {
         console.log('Payment cancelled:', paymentId);
-        callbacks.onCancelled?.(paymentId);
+        callbacks.onCancel?.(paymentId);
       },
       onError: (error: any, payment: any) => {
         console.error('Payment error:', error, payment);
