@@ -10,7 +10,7 @@ import { usePiSDK } from '@/hooks/usePiSDK';
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, getTotalPrice, getTotalItems } = useCartStore();
-  const { isAuthenticated } = usePiSDK();
+  const { isAuthenticated, isLoadingSession } = usePiSDK();
   const totalPrice = getTotalPrice();
   const totalItems = getTotalItems();
 
@@ -166,10 +166,18 @@ export default function Cart() {
                 </div>
 
                 <div className="space-y-3">
-                  {!isAuthenticated && (
+                  {!isAuthenticated && !isLoadingSession && (
                     <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
                       <p className="text-sm text-warning-foreground">
                         Sign in with Pi to proceed to checkout
+                      </p>
+                    </div>
+                  )}
+                  
+                  {isLoadingSession && (
+                    <div className="p-3 bg-muted/50 border border-border rounded-md">
+                      <p className="text-sm text-muted-foreground text-center">
+                        Checking session...
                       </p>
                     </div>
                   )}
@@ -178,7 +186,7 @@ export default function Cart() {
                     asChild 
                     size="lg" 
                     className="w-full pi-button-primary"
-                    disabled={!isAuthenticated}
+                    disabled={!isAuthenticated || isLoadingSession}
                   >
                     <Link to="/checkout">
                       Proceed to Checkout

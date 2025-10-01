@@ -37,6 +37,7 @@ export function usePiSDK() {
   const [isChecking, setIsChecking] = useState(true);
   const [user, setUser] = useState<PiUser | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
 
   // Check if Pi SDK is available and initialized
   useEffect(() => {
@@ -188,21 +189,31 @@ export function usePiSDK() {
     });
   }, [isReady]);
 
-  // Restore session on mount
+  // Restore session on mount - MUST happen synchronously before any renders
   useEffect(() => {
+    console.log('Checking for stored Pi session...');
     const stored = localStorage.getItem('pi_user');
+    
     if (stored) {
       try {
-        setUser(JSON.parse(stored));
+        const parsedUser = JSON.parse(stored);
+        console.log('Restored Pi session for user:', parsedUser.username);
+        setUser(parsedUser);
       } catch (error) {
+        console.error('Failed to restore Pi session:', error);
         localStorage.removeItem('pi_user');
       }
+    } else {
+      console.log('No stored Pi session found');
     }
+    
+    setIsLoadingSession(false);
   }, []);
 
   return {
     isReady,
     isChecking,
+    isLoadingSession,
     user,
     isAuthenticated: !!user,
     isAuthenticating,

@@ -13,13 +13,25 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function Checkout() {
   const { items, getTotalPrice, getTotalItems, clearCart } = useCartStore();
-  const { isAuthenticated, user } = usePiSDK();
+  const { isAuthenticated, user, isLoadingSession } = usePiSDK();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const totalPrice = getTotalPrice();
   const totalItems = getTotalItems();
+
+  // Show loading while checking session
+  if (isLoadingSession) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading checkout...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Redirect if not authenticated or cart is empty
   if (!isAuthenticated) {

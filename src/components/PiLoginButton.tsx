@@ -10,7 +10,7 @@ interface PiLoginButtonProps {
 }
 
 export function PiLoginButton({ onSuccess, className }: PiLoginButtonProps) {
-  const { isReady, isAuthenticating, authenticate } = usePiSDK();
+  const { isReady, isAuthenticating, authenticate, isLoadingSession } = usePiSDK();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -43,7 +43,7 @@ export function PiLoginButton({ onSuccess, className }: PiLoginButtonProps) {
     }
   };
 
-  const isDisabled = !isReady || isAuthenticating || isLoading;
+  const isDisabled = !isReady || isAuthenticating || isLoading || isLoadingSession;
 
   return (
     <Button
