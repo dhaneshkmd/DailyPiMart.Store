@@ -21,18 +21,30 @@
     <div id="root"></div>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
-      // Initialize Pi SDK as required by Pi Network documentation
-      // Using sandbox mode for testing phase as mentioned by user
-      if (window.Pi) {
-        Pi.init({ version: "2.0", sandbox: true });
-      } else {
-        // Retry initialization after SDK loads
-        window.addEventListener('load', function() {
+      // Initialize Pi SDK with proper configuration
+      // Sandbox mode: true for development, false for production
+      // For development: Test via Pi Mining app → Utilities → Sandbox
+      // For production: Access via Pi Browser at pi://dailypimart2737.pi
+      (function() {
+        function initPiSDK() {
           if (window.Pi) {
-            Pi.init({ version: "2.0", sandbox: true });
+            console.log('Initializing Pi SDK...');
+            Pi.init({ 
+              version: "2.0", 
+              sandbox: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            });
+            console.log('Pi SDK initialized with sandbox:', window.location.hostname === 'localhost');
           }
-        });
-      }
+        }
+        
+        // Try immediate initialization
+        initPiSDK();
+        
+        // Fallback: retry after page load
+        if (!window.Pi) {
+          window.addEventListener('load', initPiSDK);
+        }
+      })();
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
