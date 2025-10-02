@@ -28,12 +28,23 @@
       (function() {
         function initPiSDK() {
           if (window.Pi) {
-            console.log('Initializing Pi SDK...');
+            // Enable sandbox mode for all testing environments (localhost, lovable.app, custom domains)
+            // Only disable sandbox for official Pi Browser production URL (pi://...)
+            const isProduction = window.location.protocol === 'pi:';
+            const sandboxMode = !isProduction;
+            
+            console.log('Initializing Pi SDK...', {
+              hostname: window.location.hostname,
+              protocol: window.location.protocol,
+              sandboxMode: sandboxMode
+            });
+            
             Pi.init({ 
               version: "2.0", 
-              sandbox: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+              sandbox: sandboxMode
             });
-            console.log('Pi SDK initialized with sandbox:', window.location.hostname === 'localhost');
+            
+            console.log('Pi SDK initialized with sandbox:', sandboxMode);
           }
         }
         
