@@ -167,9 +167,24 @@ export function usePiSDK() {
       throw new Error('Pi SDK not available or not initialized');
     }
 
-    console.log('Creating Pi payment:', paymentData);
+    // Check if we're actually in Pi Browser
+    const isPiBrowser = navigator.userAgent.includes('PiBrowser') || 
+                        window.location.protocol === 'pi:';
+    
+    if (!isPiBrowser) {
+      console.warn('Not running in Pi Browser. User agent:', navigator.userAgent);
+      console.warn('Payment may fail. Please test in actual Pi Browser app.');
+    }
 
-    return window.Pi.createPayment(paymentData, {
+    console.log('Creating Pi payment:', {
+      ...paymentData,
+      isPiBrowser,
+      userAgent: navigator.userAgent,
+      protocol: window.location.protocol
+    });
+
+    try {
+      return await window.Pi.createPayment(paymentData, {
       onReadyForServerApproval: async (paymentId: string) => {
         console.log('Payment ready for server approval:', paymentId);
         await callbacks.onReadyForServerApproval(paymentId);
@@ -187,6 +202,15 @@ export function usePiSDK() {
         callbacks.onError?.(error, payment);
       },
     });
+    } catch (error: any) {
+      console.error('Failed to create payment:', {
+        error,
+        message: error?.message,
+        stack: error?.stack,
+        userAgent: navigator.userAgent
+      });
+      throw error;
+    }
   }, [isReady]);
 
   // Restore session on mount - MUST happen synchronously before any renders

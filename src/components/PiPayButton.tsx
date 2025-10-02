@@ -126,10 +126,17 @@ export function PiPayButton({
           },
         }
       );
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Payment initiation error:', error);
+      
+      const isPiBrowser = navigator.userAgent.includes('PiBrowser');
+      const errorMessage = !isPiBrowser 
+        ? "Please open this app in the Pi Browser app to make payments."
+        : error?.message || "Unable to initiate payment. Please try again.";
+      
       toast({
         title: "Payment Error",
-        description: "Unable to initiate payment. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       setIsProcessing(false);
